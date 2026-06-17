@@ -1,12 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <title>แผนที่ถนนรับผิดชอบ อบจ. ลำพูน</title>
-    
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBDfeKSf4X3ZjD7ZqJlWr26zBS-dEHuosE"></script>
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -14,157 +16,130 @@
             box-sizing: border-box;
         }
         
-        html, body {
+        html, body, #map {
+            width: 100%;
             height: 100%;
-            font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            background: #f5f5f5;
-        }
-        
-        body {
-            display: flex;
-            flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 20px;
+            padding: 15px 20px;
             text-align: center;
+            z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            z-index: 10;
         }
         
         .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            font-weight: 600;
+            font-size: 24px;
+            margin-bottom: 3px;
         }
         
         .header p {
-            font-size: 14px;
+            font-size: 12px;
             opacity: 0.9;
         }
         
-        .main-content {
-            display: flex;
-            flex: 1;
-            gap: 15px;
-            padding: 15px;
-            overflow: hidden;
-        }
-        
         #map {
-            flex: 1;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            background: #e5e3df;
-            min-height: 400px;
+            margin-top: 70px;
         }
         
         .sidebar {
-            width: 340px;
+            position: fixed;
+            right: 15px;
+            top: 85px;
+            width: 320px;
+            max-height: calc(100vh - 100px);
             background: white;
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            max-height: calc(100vh - 150px);
+            z-index: 500;
         }
         
         .sidebar h2 {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: 16px;
+            margin-bottom: 12px;
             color: #1e3c72;
             border-bottom: 3px solid #2a5298;
-            padding-bottom: 10px;
-            font-weight: 600;
+            padding-bottom: 8px;
         }
         
         .sidebar h3 {
-            font-size: 13px;
-            margin-top: 15px;
-            margin-bottom: 10px;
+            font-size: 12px;
+            margin-top: 12px;
+            margin-bottom: 8px;
             color: #333;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         
         .stats {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #333;
-            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 12px;
             border-left: 4px solid #2a5298;
         }
         
         .stats-item {
-            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-        }
-        
-        .stats-item:last-child {
-            margin-bottom: 0;
+            margin-bottom: 6px;
         }
         
         .stats-value {
             font-weight: 700;
-            font-size: 14px;
-            background: rgba(255,255,255,0.7);
+            background: rgba(255,255,255,0.8);
             padding: 2px 8px;
             border-radius: 3px;
         }
         
         .legend {
             background: #f9f9f9;
-            padding: 12px;
+            padding: 10px;
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border: 1px solid #efefef;
+            font-size: 11px;
         }
         
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
-            font-size: 12px;
-        }
-        
-        .legend-item:last-child {
-            margin-bottom: 0;
+            margin-bottom: 6px;
         }
         
         .legend-color {
-            width: 20px;
+            width: 16px;
             height: 4px;
-            margin-right: 10px;
+            margin-right: 8px;
             border-radius: 2px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         
         .filter-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 15px;
+            gap: 6px;
+            margin-bottom: 12px;
         }
         
         .filter-btn {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: #f0f0f0;
             border: 2px solid transparent;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             transition: all 0.3s ease;
-            white-space: nowrap;
         }
         
         .filter-btn:hover {
@@ -174,58 +149,54 @@
         .filter-btn.active {
             background: #2a5298;
             color: white;
-            border-color: #1e3c72;
         }
         
         .road-list {
             list-style: none;
-            flex: 1;
+            max-height: 400px;
             overflow-y: auto;
-            margin-top: 10px;
         }
         
         .road-item {
-            padding: 12px;
-            margin-bottom: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
             background: #f9f9f9;
             border-left: 4px solid #2a5298;
             cursor: pointer;
             transition: all 0.3s ease;
             border-radius: 3px;
             border: 1px solid #efefef;
+            font-size: 11px;
         }
         
         .road-item:hover {
             background: #f0f0f0;
-            transform: translateX(5px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateX(3px);
         }
         
         .road-item.active {
             background: #e3f2fd;
             border-left-color: #ff9800;
-            border: 1px solid #bbdefb;
         }
         
         .road-item strong {
             display: block;
             color: #1e3c72;
-            font-size: 12px;
-            margin-bottom: 3px;
-            font-weight: 600;
+            font-size: 11px;
+            margin-bottom: 2px;
         }
         
         .road-item small {
             display: block;
             color: #999;
-            font-size: 11px;
-            margin-bottom: 5px;
+            font-size: 10px;
+            margin-bottom: 4px;
         }
         
         .road-status {
             display: inline-block;
-            padding: 3px 8px;
-            font-size: 10px;
+            padding: 2px 6px;
+            font-size: 9px;
             border-radius: 3px;
             font-weight: 700;
         }
@@ -245,13 +216,84 @@
             color: #d84315;
         }
         
+        .ol-popup {
+            position: absolute;
+            background-color: white;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cccccc;
+            bottom: 12px;
+            left: -50px;
+            min-width: 250px;
+            max-width: 300px;
+        }
+        
+        .ol-popup:after, .ol-popup:before {
+            top: 100%;
+            border: solid transparent;
+            content: " ";
+            height: 0;
+            width: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        .ol-popup:after {
+            border-top-color: white;
+            border-width: 10px;
+            left: 48px;
+            margin-left: -10px;
+        }
+        
+        .ol-popup:before {
+            border-top-color: #cccccc;
+            border-width: 11px;
+            left: 48px;
+            margin-left: -11px;
+        }
+        
+        .ol-popup-closer {
+            text-decoration: none;
+            position: absolute;
+            top: 2px;
+            right: 8px;
+            color: #999;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .ol-popup-closer:after {
+            content: "×";
+        }
+        
+        .ol-popup-content {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .ol-popup-content h3 {
+            margin: 5px 0;
+            color: #1e3c72;
+            font-size: 13px;
+        }
+        
+        .ol-popup-content p {
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        
+        .ol-popup-content strong {
+            color: #555;
+        }
+        
         .road-list::-webkit-scrollbar {
             width: 6px;
         }
         
         .road-list::-webkit-scrollbar-track {
             background: #f1f1f1;
-            border-radius: 3px;
         }
         
         .road-list::-webkit-scrollbar-thumb {
@@ -259,45 +301,15 @@
             border-radius: 3px;
         }
         
-        .road-list::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-        
-        @media (max-width: 1024px) {
-            .main-content {
-                gap: 10px;
-                padding: 10px;
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 18px;
             }
             
             .sidebar {
                 width: 280px;
-                padding: 15px;
+                right: 10px;
             }
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                max-height: 45vh;
-            }
-            
-            .header h1 {
-                font-size: 22px;
-            }
-            
-            #map {
-                min-height: 50vh;
-            }
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #999;
         }
     </style>
 </head>
@@ -307,177 +319,78 @@
         <p>องค์การบริหารส่วนจังหวัด ลำพูน</p>
     </div>
     
-    <div class="main-content">
-        <div id="map"></div>
+    <div id="map"></div>
+    
+    <div class="sidebar">
+        <h2>📋 รายชื่อถนน</h2>
         
-        <div class="sidebar">
-            <h2>📋 รายชื่อถนน</h2>
-            
-            <div class="stats">
-                <div class="stats-item">
-                    <span>📊 ทั้งหมด</span>
-                    <span class="stats-value" id="totalRoads">0</span>
-                </div>
-                <div class="stats-item">
-                    <span>✅ สภาพดี</span>
-                    <span class="stats-value" id="goodRoads">0</span>
-                </div>
-                <div class="stats-item">
-                    <span>⚠️ ปานกลาง</span>
-                    <span class="stats-value" id="fairRoads">0</span>
-                </div>
-                <div class="stats-item">
-                    <span>❌ ชำรุด</span>
-                    <span class="stats-value" id="poorRoads">0</span>
-                </div>
+        <div class="stats">
+            <div class="stats-item">
+                <span>📊 ทั้งหมด</span>
+                <span class="stats-value" id="totalRoads">0</span>
             </div>
-            
-            <div class="legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #4CAF50; width: 16px; height: 6px;"></div>
-                    <span><strong>สภาพดี</strong></span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #FFC107; width: 16px; height: 6px;"></div>
-                    <span><strong>ปานกลาง</strong></span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: #F44336; width: 16px; height: 6px;"></div>
-                    <span><strong>ชำรุด</strong></span>
-                </div>
+            <div class="stats-item">
+                <span>✅ สภาพดี</span>
+                <span class="stats-value" id="goodRoads">0</span>
             </div>
-            
-            <h3>🔍 ตัวกรอง</h3>
-            <div class="filter-group" id="filterGroup">
-                <button class="filter-btn active" data-filter="all">ทั้งหมด</button>
-                <button class="filter-btn" data-filter="good">✅ ดี</button>
-                <button class="filter-btn" data-filter="fair">⚠️ ปานกลาง</button>
-                <button class="filter-btn" data-filter="poor">❌ ชำรุด</button>
+            <div class="stats-item">
+                <span>⚠️ ปานกลาง</span>
+                <span class="stats-value" id="fairRoads">0</span>
             </div>
-            
-            <h3>🚗 ถนน</h3>
-            <ul class="road-list" id="roadList"></ul>
+            <div class="stats-item">
+                <span>❌ ชำรุด</span>
+                <span class="stats-value" id="poorRoads">0</span>
+            </div>
         </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #4CAF50;"></div>
+                <span><strong>สภาพดี</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #FFC107;"></div>
+                <span><strong>ปานกลาง</strong></span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #F44336;"></div>
+                <span><strong>ชำรุด</strong></span>
+            </div>
+        </div>
+        
+        <h3>🔍 ตัวกรอง</h3>
+        <div class="filter-group" id="filterGroup"></div>
+        
+        <h3>🚗 ถนน</h3>
+        <ul class="road-list" id="roadList"></ul>
+    </div>
+    
+    <div id="popup" class="ol-popup" style="display:none;">
+        <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+        <div id="popup-content" class="ol-popup-content"></div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
     <script>
         let map;
-        let polylines = [];
+        let vectorLayer;
+        let allRoads = [];
         let currentFilter = 'all';
         
-        // ข้อมูลถนนรับผิดชอบของ อบจ. ลำพูน
-        const roads = [
-            {
-                id: 1,
-                name: "ถนนแยกสวนแตน - เมืองลำพูน",
-                status: "good",
-                length: "12.5 กม.",
-                district: "เมืองลำพูน",
-                coordinates: [
-                    {lat: 18.7700, lng: 99.0200},
-                    {lat: 18.7750, lng: 99.0180},
-                    {lat: 18.7800, lng: 99.0150},
-                    {lat: 18.7850, lng: 99.0120}
-                ],
-                description: "ถนนหลักเชื่อมเมืองลำพูน"
-            },
-            {
-                id: 2,
-                name: "ถนนสายตรวจราษฎร์ - บ้านโปง",
-                status: "fair",
-                length: "8.3 กม.",
-                district: "บ้านโปง",
-                coordinates: [
-                    {lat: 18.8100, lng: 99.0300},
-                    {lat: 18.8150, lng: 99.0350},
-                    {lat: 18.8200, lng: 99.0400},
-                    {lat: 18.8250, lng: 99.0450}
-                ],
-                description: "ถนนเชื่อมเมืองสู่บ้านโปง"
-            },
-            {
-                id: 3,
-                name: "ถนนสายห้วยแคว - พ้อ",
-                status: "poor",
-                length: "15.2 กม.",
-                district: "พ้อ",
-                coordinates: [
-                    {lat: 18.7600, lng: 99.0000},
-                    {lat: 18.7650, lng: 98.9950},
-                    {lat: 18.7700, lng: 98.9900},
-                    {lat: 18.7750, lng: 98.9850}
-                ],
-                description: "ถนนเชื่อมหลักไปทางพ้อ"
-            },
-            {
-                id: 4,
-                name: "ถนนสายปงเสือ - ท่าสวาย",
-                status: "good",
-                length: "11.0 กม.",
-                district: "ปงเสือ",
-                coordinates: [
-                    {lat: 18.9000, lng: 99.0600},
-                    {lat: 18.9050, lng: 99.0650},
-                    {lat: 18.9100, lng: 99.0700},
-                    {lat: 18.9150, lng: 99.0750}
-                ],
-                description: "ถนนเศรษฐกิจท้องถิ่น"
-            },
-            {
-                id: 5,
-                name: "ถนนสายท่าสวาย - ห้วยกระ",
-                status: "fair",
-                length: "9.8 กม.",
-                district: "ท่าสวาย",
-                coordinates: [
-                    {lat: 18.8800, lng: 99.1000},
-                    {lat: 18.8850, lng: 99.1050},
-                    {lat: 18.8900, lng: 99.1100},
-                    {lat: 18.8950, lng: 99.1150}
-                ],
-                description: "ถนนเชื่อมสตม.ท่าสวาย"
-            },
-            {
-                id: 6,
-                name: "ถนนสายเมืองลำพูน - ปงหญ้า",
-                status: "good",
-                length: "13.5 กม.",
-                district: "เมืองลำพูน",
-                coordinates: [
-                    {lat: 18.7800, lng: 99.0000},
-                    {lat: 18.7850, lng: 98.9950},
-                    {lat: 18.7900, lng: 98.9900},
-                    {lat: 18.7950, lng: 98.9850}
-                ],
-                description: "ถนนหลักไปยังปงหญ้า"
-            },
-            {
-                id: 7,
-                name: "ถนนสายท้องถิ่น - บ้านหาม",
-                status: "poor",
-                length: "7.5 กม.",
-                district: "บ้านหาม",
-                coordinates: [
-                    {lat: 18.7200, lng: 99.0500},
-                    {lat: 18.7250, lng: 99.0550},
-                    {lat: 18.7300, lng: 99.0600},
-                    {lat: 18.7350, lng: 99.0650}
-                ],
-                description: "ถนนท้องถิ่นต้องซ่อมแซม"
-            },
-            {
-                id: 8,
-                name: "ถนนสายเมืองลำพูน - วัดพระบาท",
-                status: "good",
-                length: "5.2 กม.",
-                district: "เมืองลำพูน",
-                coordinates: [
-                    {lat: 18.7883, lng: 99.0108},
-                    {lat: 18.7900, lng: 98.9950}
-                ],
-                description: "ถนนท่องเที่ยว"
+        // โหลดข้อมูลถนน
+        async function loadRoads() {
+            try {
+                const response = await fetch('roads.json');
+                const data = await response.json();
+                allRoads = data.roads;
+                initMap();
+                updateStats();
+                renderRoadList(allRoads);
+                renderFilterButtons();
+            } catch (error) {
+                console.error('Error loading roads:', error);
             }
-        ];
+        }
         
         // เลือกสี
         function getStatusColor(status) {
@@ -500,59 +413,88 @@
         
         // เริ่มต้นแผนที่
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 11,
-                center: {lat: 18.7883, lng: 99.0108},
-                mapTypeId: 'roadmap',
-                styles: [
-                    {
-                        featureType: 'water',
-                        elementType: 'geometry',
-                        stylers: [{color: '#c9e6eb'}]
-                    }
-                ]
+            map = new ol.Map({
+                target: 'map',
+                layers: [
+                    new ol.layer.Tile({
+                        source: new ol.source.OSM()
+                    })
+                ],
+                view: new ol.View({
+                    center: ol.proj.fromLonLat([99.0108, 18.7883]),
+                    zoom: 11
+                })
             });
             
-            drawRoads(roads);
+            vectorLayer = new ol.layer.Vector({
+                source: new ol.source.Vector()
+            });
+            map.addLayer(vectorLayer);
+            
+            drawRoads(allRoads);
+            
+            // Popup
+            const popup = document.getElementById('popup');
+            const closer = document.getElementById('popup-closer');
+            const content = document.getElementById('popup-content');
+            
+            closer.onclick = function() {
+                popup.style.display = 'none';
+                closer.blur();
+                return false;
+            };
+            
+            map.on('click', function(evt) {
+                const feature = map.forEachFeatureAtPixel(evt.pixel,
+                    function(feature) {
+                        return feature;
+                    });
+                
+                if (feature) {
+                    const coord = evt.coordinate;
+                    const road = feature.get('road');
+                    content.innerHTML = `
+                        <h3>${road.name}</h3>
+                        <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
+                        <p><strong>อำเภอ:</strong> ${road.district}</p>
+                        <p><strong>ความยาว:</strong> ${road.length} กม.</p>
+                        <p><strong>สภาพ:</strong> ${getStatusText(road.status)}</p>
+                        <p><strong>รายละเอียด:</strong> ${road.description}</p>
+                    `;
+                    popup.style.display = 'block';
+                    popup.style.left = (evt.pixel[0]) + 'px';
+                    popup.style.top = (evt.pixel[1] - 50) + 'px';
+                } else {
+                    popup.style.display = 'none';
+                }
+            });
         }
         
         // วาดเส้นถนน
         function drawRoads(roadsToShow) {
-            // ลบเส้นเก่า
-            polylines.forEach(polyline => polyline.setMap(null));
-            polylines = [];
+            vectorLayer.getSource().clear();
             
             roadsToShow.forEach(road => {
-                const polyline = new google.maps.Polyline({
-                    path: road.coordinates,
-                    geodesic: true,
-                    strokeColor: getStatusColor(road.status),
-                    strokeOpacity: 0.9,
-                    strokeWeight: 6,
-                    map: map,
-                    title: road.name
+                const coordinates = road.coordinates.map(coord => 
+                    ol.proj.fromLonLat([coord[0], coord[1]])
+                );
+                
+                const lineFeature = new ol.Feature({
+                    geometry: new ol.geom.LineString(coordinates),
+                    road: road
                 });
                 
-                // เพิ่ม popup เมื่อคลิก
-                polyline.addListener('click', function() {
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: `
-                            <div style="font-family: Arial; width: 220px; padding: 10px;">
-                                <h3 style="margin: 5px 0; color: #1e3c72; font-size: 14px;">${road.name}</h3>
-                                <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
-                                <p style="margin: 5px 0; font-size: 12px;">
-                                    <strong>อำเภอ:</strong> ${road.district}<br>
-                                    <strong>ความยาว:</strong> ${road.length}<br>
-                                    <strong>สภาพ:</strong> ${getStatusText(road.status)}
-                                </p>
-                            </div>
-                        `
-                    });
-                    infoWindow.setPosition(road.coordinates[0]);
-                    infoWindow.open(map);
+                const style = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: getStatusColor(road.status),
+                        width: 5,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    })
                 });
                 
-                polylines.push(polyline);
+                lineFeature.setStyle(style);
+                vectorLayer.getSource().addFeature(lineFeature);
             });
         }
         
@@ -561,57 +503,71 @@
             const list = document.getElementById('roadList');
             list.innerHTML = '';
             
-            roadsToShow.forEach((road, index) => {
+            roadsToShow.forEach(road => {
                 const li = document.createElement('li');
                 li.className = 'road-item';
                 li.innerHTML = `
                     <strong>${road.name}</strong>
-                    <small>${road.district} | ${road.length}</small>
+                    <small>${road.district} | ${road.length} กม.</small>
                     <span class="road-status status-${road.status}">${getStatusText(road.status)}</span>
                 `;
                 
                 li.addEventListener('click', () => {
-                    // เน้นรายการ
-                    document.querySelectorAll('.road-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    li.classList.add('active');
-                    
-                    // จูมไปยังถนน
-                    const bounds = new google.maps.LatLngBounds();
-                    road.coordinates.forEach(coord => {
-                        bounds.extend(coord);
-                    });
-                    map.fitBounds(bounds);
-                    
-                    // เปิด popup
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: `
-                            <div style="font-family: Arial; width: 220px; padding: 10px;">
-                                <h3 style="margin: 5px 0; color: #1e3c72; font-size: 14px;">${road.name}</h3>
-                                <hr style="margin: 8px 0; border: none; border-top: 1px solid #ddd;">
-                                <p style="margin: 5px 0; font-size: 12px;">
-                                    <strong>อำเภอ:</strong> ${road.district}<br>
-                                    <strong>ความยาว:</strong> ${road.length}<br>
-                                    <strong>สภาพ:</strong> ${getStatusText(road.status)}
-                                </p>
-                            </div>
-                        `
-                    });
-                    infoWindow.setPosition(road.coordinates[0]);
-                    infoWindow.open(map);
+                    const extent = ol.extent.createEmpty();
+                    const coordinates = road.coordinates.map(coord => 
+                        ol.proj.fromLonLat([coord[0], coord[1]])
+                    );
+                    coordinates.forEach(coord => ol.extent.extend(extent, coord));
+                    map.getView().fit(extent, {padding: [50, 50, 50, 350]});
                 });
                 
                 list.appendChild(li);
             });
         }
         
+        // เรนเดอร์ปุ่มตัวกรอง
+        function renderFilterButtons() {
+            const filterGroup = document.getElementById('filterGroup');
+            filterGroup.innerHTML = '';
+            
+            const filters = ['all', 'good', 'fair', 'poor'];
+            const labels = ['ทั้งหมด', '✅ ดี', '⚠️ ปานกลาง', '❌ ชำรุด'];
+            
+            filters.forEach((filter, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn' + (filter === 'all' ? ' active' : '');
+                btn.textContent = labels[index];
+                btn.dataset.filter = filter;
+                
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    filterRoads(filter);
+                });
+                
+                filterGroup.appendChild(btn);
+            });
+        }
+        
+        // ตัวกรอง
+        function filterRoads(filter) {
+            currentFilter = filter;
+            let filtered = allRoads;
+            
+            if (filter !== 'all') {
+                filtered = allRoads.filter(road => road.status === filter);
+            }
+            
+            drawRoads(filtered);
+            renderRoadList(filtered);
+        }
+        
         // อัปเดตสถิติ
         function updateStats() {
-            const total = roads.length;
-            const good = roads.filter(r => r.status === 'good').length;
-            const fair = roads.filter(r => r.status === 'fair').length;
-            const poor = roads.filter(r => r.status === 'poor').length;
+            const total = allRoads.length;
+            const good = allRoads.filter(r => r.status === 'good').length;
+            const fair = allRoads.filter(r => r.status === 'fair').length;
+            const poor = allRoads.filter(r => r.status === 'poor').length;
             
             document.getElementById('totalRoads').textContent = total;
             document.getElementById('goodRoads').textContent = good;
@@ -619,34 +575,8 @@
             document.getElementById('poorRoads').textContent = poor;
         }
         
-        // ตัวกรอง
-        function filterRoads(filter) {
-            currentFilter = filter;
-            let filtered = roads;
-            
-            if (filter !== 'all') {
-                filtered = roads.filter(road => road.status === filter);
-            }
-            
-            drawRoads(filtered);
-            renderRoadList(filtered);
-        }
-        
-        // ตั้งค่าปุ่มตัวกรอง
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                filterRoads(e.target.dataset.filter);
-            });
-        });
-        
-        // เริ่มต้นเมื่อโหลดหน้า
-        window.addEventListener('load', () => {
-            initMap();
-            updateStats();
-            renderRoadList(roads);
-        });
+        // เริ่มต้น
+        loadRoads();
     </script>
 </body>
 </html>
